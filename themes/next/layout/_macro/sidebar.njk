@@ -58,6 +58,28 @@
     </div>
     {%- endif %}
 
+    {# Recent posts #}
+    {% if theme.recent_posts.enable and theme.recent_posts.sidebar %}
+      <div class="sidebar-inner sidebar-blogroll">
+        <div class="links-of-blogroll animated motion-element {{ "links-of-blogroll-" + theme.recent_posts.layout }}">
+          <div class="links-of-blogroll-title">
+            <i class="fa fa-history fa-{{ theme.recent_posts.icon | lower }}" aria-hidden="true"></i>
+            {{ theme.recent_posts.title }}
+          </div>
+          <ul class="links-of-blogroll-list">
+            {% set posts = site.posts.sort('-date').limit(5) %}
+            {% for post in posts.toArray() %}
+              <li class="recent_posts_li">
+                <a href="{{ url_for(post.path) }}" title="{{ post.title }}" target="_blank">
+                  {{ post.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
     {%- if theme.related_posts.enable %}
       {%- if theme.pjax %}
         <div class="pjax">

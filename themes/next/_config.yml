@@ -926,3 +926,11 @@ vendors:
 css: css
 js: js
 images: images
+
+
+recent_posts:
+  enable: true     # 启用最近文章功能
+  sidebar: true    # 在侧边栏显示
+  icon: history    # Font Awesome 图标
+  title: 近期文章 # 模块标题
+  layout: block    # 布局方式（block 或 inline）

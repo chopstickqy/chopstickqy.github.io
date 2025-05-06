@@ -1,6 +1,7 @@
 ---
 title: ISSUE & FEATURE COLLECTION
-date: YYYY-MM-DD HH:mm:ss
+date: 1994-07-15
+top: true
 ---
 
 
