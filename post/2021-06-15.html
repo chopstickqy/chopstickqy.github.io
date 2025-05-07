@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"chopstickqy.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="背景APP在发布后如果有一点点小问题需要改动，需要重新审核发布（此处cue到 APP Store）时需要花费一到两天的时间，那么当改动的仅仅是静态文件时（HTML&#x2F;CSS&#x2F;JAVASCRIPT），可不可以仅仅从远端服务器拉取文件替换本地文件，来达到热更新呢？答案一定是可以的，废话继续我们先来了解一下CodePush。 CodePush 简介来看一下官方介绍  CodePush">
+<meta property="og:type" content="article">
+<meta property="og:title" content="私有化部署CodePush 以及 Ionic + Angular + Cordova 项目集成微软 CodePush">
+<meta property="og:url" content="https://chopstickqy.github.io/post/2021-06-15.html">
+<meta property="og:site_name" content="Charles&#39;s blog">
+<meta property="og:description" content="背景APP在发布后如果有一点点小问题需要改动，需要重新审核发布（此处cue到 APP Store）时需要花费一到两天的时间，那么当改动的仅仅是静态文件时（HTML&#x2F;CSS&#x2F;JAVASCRIPT），可不可以仅仅从远端服务器拉取文件替换本地文件，来达到热更新呢？答案一定是可以的，废话继续我们先来了解一下CodePush。 CodePush 简介来看一下官方介绍  CodePush">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chopstickqy.github.io/images/2021-06-15/1.png">
+<meta property="og:image" content="https://chopstickqy.github.io/images/2021-06-15/2.png">
+<meta property="og:image" content="https://chopstickqy.github.io/images/2021-06-15/3.png">
+<meta property="article:published_time" content="2021-06-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-07T12:24:14.556Z">
+<meta property="article:author" content="Charles">
+<meta property="article:tag" content="热更新">
+<meta property="article:tag" content="CodePush">
+<meta property="article:tag" content="Ionic">
+<meta property="article:tag" content="Angular">
+<meta property="article:tag" content="Cordova">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chopstickqy.github.io/images/2021-06-15/1.png">
+
+
+<link rel="canonical" href="https://chopstickqy.github.io/post/2021-06-15.html">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://chopstickqy.github.io/post/2021-06-15.html","path":"/post/2021-06-15.html","title":"私有化部署CodePush 以及 Ionic + Angular + Cordova 项目集成微软 CodePush"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>私有化部署CodePush 以及 Ionic + Angular + Cordova 项目集成微软 CodePush | Charles's blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Charles's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CodePush-%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">CodePush 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2CodePush%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.</span> <span class="nav-text">私有化部署CodePush服务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">3.1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E3%80%81%E9%85%8D%E7%BD%AE%E5%92%8C%E9%83%A8%E7%BD%B2%E7%A7%81%E6%9C%89%E5%8C%96code-push-server"><span class="nav-number">3.2.</span> <span class="nav-text">安装、配置和部署私有化code-push-server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-CodePush-Cli-%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">3.3.</span> <span class="nav-text">安装 CodePush Cli 客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8C-APP"><span class="nav-number">3.4.</span> <span class="nav-text">注册 APP</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E9%A1%B9%E7%9B%AE%E4%B8%AD%E9%9B%86%E6%88%90CodePush-SDK"><span class="nav-number">4.</span> <span class="nav-text">在项目中集成CodePush SDK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-code-push-cordova%E6%8F%92%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">安装 code-push cordova插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#code-push-cordova-%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE"><span class="nav-number">4.2.</span> <span class="nav-text">code push cordova 插件配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%91%E5%B8%83%E6%9B%B4%E6%96%B0%E3%80%81%E7%83%AD%E9%83%A8%E7%BD%B2"><span class="nav-number">5.</span> <span class="nav-text">发布更新、热部署</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Charles</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+
+    
+    
+      <div class="sidebar-inner sidebar-blogroll">
+        <div class="links-of-blogroll animated motion-element links-of-blogroll-block">
+          <div class="links-of-blogroll-title">
+            <i class="fa fa-history fa-history" aria-hidden="true"></i>
+            近期文章
+          </div>
+          <ul class="links-of-blogroll-list">
+            
+            
+              <li class="recent_posts_li">
+                <a href="/post/2025-04-29.html" title="消除异步函数的传染性：构建优雅的同步式异步编程范式" target="_blank">
+                  消除异步函数的传染性：构建优雅的同步式异步编程范式
+                </a>
+              </li>
+            
+              <li class="recent_posts_li">
+                <a href="/post/2025-01-01.html" title="Mac 软件推荐" target="_blank">
+                  Mac 软件推荐
+                </a>
+              </li>
+            
+              <li class="recent_posts_li">
+                <a href="/post/2024-12-13.html" title="Sentry Micro-FE solution" target="_blank">
+                  Sentry Micro-FE solution
+                </a>
+              </li>
+            
+              <li class="recent_posts_li">
+                <a href="/post/2024-11-26.html" title="解决 node-canvas 安装问题：Mac M1、Python 版本、musl 兼容性" target="_blank">
+                  解决 node-canvas 安装问题：Mac M1、Python 版本、musl 兼容性
+                </a>
+              </li>
+            
+              <li class="recent_posts_li">
+                <a href="/post/2021-07-26.html" title="深入了解 qiankun 微前端架构" target="_blank">
+                  深入了解 qiankun 微前端架构
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chopstickqy.github.io/post/2021-06-15.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Charles">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Charles's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="私有化部署CodePush 以及 Ionic + Angular + Cordova 项目集成微软 CodePush | Charles's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          私有化部署CodePush 以及 Ionic + Angular + Cordova 项目集成微软 CodePush
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-06-15 08:00:00" itemprop="dateCreated datePublished" datetime="2021-06-15T08:00:00+08:00">2021-06-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-05-07 20:24:14" itemprop="dateModified" datetime="2025-05-07T20:24:14+08:00">2025-05-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Technology/" itemprop="url" rel="index"><span itemprop="name">Technology</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>APP在发布后如果有一点点小问题需要改动，需要重新审核发布（此处cue到 <strong>APP Store</strong>）时需要花费一到两天的时间，那么当改动的仅仅是静态文件时（HTML&#x2F;CSS&#x2F;JAVASCRIPT），可不可以仅仅从远端服务器拉取文件替换本地文件，来达到热更新呢？答案一定是可以的，废话继续我们先来了解一下<code>CodePush</code>。</p>
+<h2 id="CodePush-简介"><a href="#CodePush-简介" class="headerlink" title="CodePush 简介"></a>CodePush 简介</h2><p>来看一下官方介绍</p>
+<blockquote>
+<p>CodePush is a cloud service that enables Cordova and React Native developers to deploy mobile app updates directly to their users’ devices. It works by acting as a central repository that developers can publish updates to (JS, HTML, CSS and images), and that apps can query for updates from (using provided client SDK for Cordova and React Native). This allows you to have a more deterministic and direct engagement model with your userbase, when addressing bugs and&#x2F;or adding small features that don’t require you to re-build a binary and re-distribute it through the respective app stores.<br>To get started using CodePush, refer to our documentation, otherwise, read the following steps if you’d like to build&#x2F;contribute to the project from source.<br><em>NOTE: If you need information about code-push management CLI, you can find it in v3.0.1.</em></p>
+</blockquote>
+<p>我们注重这句话：<strong>它使<code>Cordova</code>和<code>React Native</code>开发人员能够将移动应用程序更新直接部署到用户的设备上</strong>。<br>使用<code>CodePush</code>可以使我们在不重新构建和发布程序的前提下，更新一些静态文件（JS,HTML,CSS和图片）。</p>
+<p>**<em>注意：本文所写的<code>CodePush</code>技术在2017年后已经被微软整合到 App Center</em><br>所以本文可能已经被时代的大浪遗弃了，各位有更好的解决方案，可以留言我。</p>
+<h2 id="私有化部署CodePush服务"><a href="#私有化部署CodePush服务" class="headerlink" title="私有化部署CodePush服务"></a>私有化部署CodePush服务</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><p>运行<code>code-push-server</code>需要<code>node</code>环境和<code>mysql</code>数据库（其他数据库也可以，需要改源码）支持，对于<code>node</code>和<code>mysql</code>就不多做解释了，我们先来安装这两个工具：<br>因为我本地有<code>node</code>环境，所以没有重新进行安装，需要安装的小伙伴们可以在<a target="_blank" rel="noopener" href="https://nodejs.org/zh-cn/">官网</a>下载安装。<br>列出我本地的<code>node</code>和<code>npm</code>版本</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">node v12<span class="number">.18</span><span class="number">.3</span></span><br><span class="line">npm <span class="number">6.14</span><span class="number">.6</span></span><br></pre></td></tr></table></figure>
+<p>mysql数据库使用的版本是：<a target="_blank" rel="noopener" href="https://cdn.mysql.com//Downloads/MySQLInstaller/mysql-installer-community-8.0.25.0.msi">mysql-installer-community-8.0.25.0.msi</a></p>
+<h3 id="安装、配置和部署私有化code-push-server"><a href="#安装、配置和部署私有化code-push-server" class="headerlink" title="安装、配置和部署私有化code-push-server"></a>安装、配置和部署私有化code-push-server</h3><p>这里的服务端使用源码<a target="_blank" rel="noopener" href="https://github.com/lisong/code-push-server.git">github.com&#x2F;lisong&#x2F;code…</a><br>克隆源码：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">git <span class="built_in">clone</span> https://github.com/lisong/code-push-server.git</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cd</span> code-push-server</span></span><br></pre></td></tr></table></figure>
+<p>修改<strong>config.js</strong>配置文件里数据相关和其他配置<br><img src="https://chopstickqy.github.io/images/2021-06-15/1.png" alt="image"></p>
+<p><img src="https://chopstickqy.github.io/images/2021-06-15/2.png" alt="image"><br>因为本地安装的mysql数据库版本比项目中客户端所支持的版本高，所以要升级<code>mysql2</code>依赖，修改<strong>package.json</strong>中<code>mysql2</code>版本为2.2.5。<br><img src="https://chopstickqy.github.io/images/2021-06-15/3.png" alt="image"></p>
+<p>继续执行命令安装依赖包和运行服务：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">npm install</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./bin/db init --dbname codepush --dbhost localhost --dbuser root --dbpassword 123456 --dbport 3306 <span class="comment">#初始化mysql数据库</span></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">./bin/www <span class="comment">#启动服务 浏览器中打开 http://127.0.0.1:3000 默认登录密码:admin/123456</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-CodePush-Cli-客户端"><a href="#安装-CodePush-Cli-客户端" class="headerlink" title="安装 CodePush Cli 客户端"></a>安装 CodePush Cli 客户端</h3><p>在本地终端安装<code>CodePush CLI</code>客户端（因为后面需要自己打包上传项目，所以安装在自己开发的电脑上即可）。<br>这里由于<code>code-push-server</code>版本原因，我们来指定版本2.1.9来安装:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g code-push-cli@2.1.9</span><br></pre></td></tr></table></figure>
+<p>使用客户端进行登录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">code-push login http://xxx.xxx.xxx.xxx:3000</span><br></pre></td></tr></table></figure>
+
+<p>命令执行会打开浏览器跳转到服务器页面获取<code>token</code>，使用默认admin&#x2F;123456登录，复制取到的<code>token</code>保存即可。</p>
+<h3 id="注册-APP"><a href="#注册-APP" class="headerlink" title="注册 APP"></a>注册 APP</h3><p>为了让<code>CodePush</code>服务知道你的项目，我们需要向它注册APP。<br>在终端输入<code>code-push add &lt;appname&gt; &lt;os&gt; &lt;platform&gt;</code>,并且<code>appname</code>要加<code>-android</code>或者<code>-ios</code>结尾，然后是平台，最后加上是<code>react-native</code>或者<code>cordova</code>，例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">code-push app add codepush-ionic-test-android android cordova</span><br></pre></td></tr></table></figure>
+
+<h2 id="在项目中集成CodePush-SDK"><a href="#在项目中集成CodePush-SDK" class="headerlink" title="在项目中集成CodePush SDK"></a>在项目中集成CodePush SDK</h2><p><em>参考文档：<a target="_blank" rel="noopener" href="https://ionicframework.com/docs/native/code-push">ionicframework.com&#x2F;docs&#x2F;native…</a></em></p>
+<h3 id="安装-code-push-cordova插件"><a href="#安装-code-push-cordova插件" class="headerlink" title="安装 code-push cordova插件"></a>安装 code-push cordova插件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ionic cordova plugin add cordova-plugin-code-push</span><br><span class="line">npm install @ionic-native/code-push</span><br></pre></td></tr></table></figure>
+<h3 id="code-push-cordova-插件配置"><a href="#code-push-cordova-插件配置" class="headerlink" title="code push cordova 插件配置"></a>code push cordova 插件配置</h3><p>在<strong>config.xml</strong>文件中设置生成的<code>deploymentkey</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">platform</span> <span class="attr">name</span>=<span class="string">&quot;android&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">preference</span> <span class="attr">name</span>=<span class="string">&quot;CodePushDeploymentKey&quot;</span> <span class="attr">value</span>=<span class="string">&quot;YOUR-ANDROID-DEPLOYMENT-KEY&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">preference</span> <span class="attr">name</span>=<span class="string">&quot;codepushserverurl&quot;</span> <span class="attr">value</span>=<span class="string">&quot;http://xxxx.xxxx.xxxx.xxxx:3000&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">platform</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">platform</span> <span class="attr">name</span>=<span class="string">&quot;ios&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">preference</span> <span class="attr">name</span>=<span class="string">&quot;CodePushDeploymentKey&quot;</span> <span class="attr">value</span>=<span class="string">&quot;YOUR-IOS-DEPLOYMENT-KEY&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">preference</span> <span class="attr">name</span>=<span class="string">&quot;codepushserverurl&quot;</span> <span class="attr">value</span>=<span class="string">&quot;http://xxxx.xxxx.xxxx.xxxx:3000&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">platform</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>###代码集成</p>
+<p>修改 <code>src/app/app.module.ts</code> (将CodePush设置为 provider)。</p>
+<p>最后，在<code>src/app.component.ts</code>中使用插件：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Component</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Platform</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;ionic-angular&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StatusBar</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@ionic-native/status-bar&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">SplashScreen</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@ionic-native/splash-screen&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">HomePage</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;../pages/home/home&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CodePush</span>, <span class="title class_">InstallMode</span>, <span class="title class_">SyncStatus</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@ionic-native/code-push&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">AlertController</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;ionic-angular/components/alert/alert-controller&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span>(&#123;</span><br><span class="line">  <span class="attr">templateUrl</span>: <span class="string">&#x27;app.html&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">MyApp</span> &#123;</span><br><span class="line">  <span class="attr">rootPage</span>:<span class="built_in">any</span> = <span class="title class_">HomePage</span>;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="attr">platform</span>: <span class="title class_">Platform</span>, <span class="attr">statusBar</span>: <span class="title class_">StatusBar</span>, <span class="attr">splashScreen</span>: <span class="title class_">SplashScreen</span>,</span></span><br><span class="line"><span class="params">              <span class="keyword">private</span> <span class="attr">codePush</span>: <span class="title class_">CodePush</span>,  <span class="keyword">private</span> <span class="attr">alertCtrl</span>: <span class="title class_">AlertController</span></span>) &#123;</span><br><span class="line">    platform.<span class="title function_">ready</span>().<span class="title function_">then</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// Okay, so the platform is ready and our plugins are available.</span></span><br><span class="line">      <span class="comment">// Here you can do any higher level native things you might need.</span></span><br><span class="line">      statusBar.<span class="title function_">styleDefault</span>();</span><br><span class="line">      splashScreen.<span class="title function_">hide</span>();</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">checkCodePush</span>(); <span class="comment">//Use the plugin always after platform.ready()</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">checkCodePush</span>(<span class="params"></span>) &#123;</span><br><span class="line">     <span class="variable language_">this</span>.<span class="property">codePush</span>.<span class="title function_">sync</span>(&#123;</span><br><span class="line">      <span class="attr">updateDialog</span>: &#123;</span><br><span class="line">       <span class="attr">appendReleaseDescription</span>: <span class="literal">true</span>,</span><br><span class="line">       <span class="attr">descriptionPrefix</span>: <span class="string">&quot;\n\nChange log:\n&quot;</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">installMode</span>: <span class="title class_">InstallMode</span>.<span class="property">IMMEDIATE</span></span><br><span class="line">   &#125;).<span class="title function_">subscribe</span>(</span><br><span class="line">     <span class="function">(<span class="params">data</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;CODE PUSH SUCCESSFUL: &#x27;</span> + data);</span><br><span class="line">     &#125;,</span><br><span class="line">     <span class="function">(<span class="params">err</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;CODE PUSH ERROR: &#x27;</span> + err);</span><br><span class="line">     &#125;</span><br><span class="line">   );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="发布更新、热部署"><a href="#发布更新、热部署" class="headerlink" title="发布更新、热部署"></a>发布更新、热部署</h2><p>IOS:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">code-push release codepush-ionic-test-ios ./platforms/ios/www/ 0.0.1 --description &quot;Your awesome change description&quot; -d &quot;Staging&quot;</span><br></pre></td></tr></table></figure>
+
+<p>Android:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">code-push release codepush-ionic-test-android ./platforms/android/app/src/main/assets/www/ 0.0.1 --description &quot;Your awesome change description&quot; -d &quot;Staging&quot;</span><br></pre></td></tr></table></figure>
+
+<p>**<em>注意：发布的版本要和线上的一致，否则无法更新</em><br>发布后重新启动APP即可看到更新的弹窗提示。</p>
+<p>参考文献：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7d44c244ac5c?utm_campaign=maleskine&utm_content=note&utm_medium=seo_notes&utm_source=recommendation">使用微软code push和私有化部署code-push-server的过程</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.bubuko.com/infodetail-2754143.html%C2%A0">服务器端code-push-server、mysql服务的架设</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%83%AD%E6%9B%B4%E6%96%B0/" rel="tag"># 热更新</a>
+              <a href="/tags/CodePush/" rel="tag"># CodePush</a>
+              <a href="/tags/Ionic/" rel="tag"># Ionic</a>
+              <a href="/tags/Angular/" rel="tag"># Angular</a>
+              <a href="/tags/Cordova/" rel="tag"># Cordova</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/post/2020-03-27.html" rel="prev" title="解决IE8连接TLS 1.0服务端的问题">
+                  <i class="fa fa-angle-left"></i> 解决IE8连接TLS 1.0服务端的问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/post/2021-07-16.html" rel="next" title="AppHangB1引起的explorer进程停止与Windows交互解决方法">
+                  AppHangB1引起的explorer进程停止与Windows交互解决方法 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Charles</span>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
